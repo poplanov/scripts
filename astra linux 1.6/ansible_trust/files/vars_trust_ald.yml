@@ -1,0 +1,5 @@
+trust: 
+  - { fqdn: "cod.cod.ru", domain: "cod.ru" } 
+  - { fqdn: "ovu1.mil1.ru", domain: "mil1.ru" } 
+  - { fqdn: "ovu2.mil2.ru", domain: "mil2.ru" } 
+  - { fqdn: "ovu3.mil3.ru", domain: "mil3.ru" } 

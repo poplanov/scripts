@@ -1,0 +1,83 @@
+# This is a config file for Astra Linux Directory (ald) server and client.
+# If values are altered - the following command should be invoked to update
+# the server:
+#
+# $ ald-init   commit-config    (for server machine update) 
+# $ ald-client commit-config    (for client machines update) 
+#
+
+VERSION=1.7
+# Version of ald
+
+
+DOMAIN=.{{ ansible_domain }}
+# The name of your domain (also used as Kerberos realm in upper-case).
+# Should be in the form:
+# .example.com
+# !NOTE! (for ald-server). If this value is changed - the server should be
+# reinitialized by:
+# $ ald-init init
+# Or you should use the commands 'ald-init backup-ldif' and 
+# 'ald-init restore-backup-ldif'.
+
+
+SERVER={{ ansible_fqdn }}
+# Fully qualified name of Astra Linux Directory server. 
+# Should be in the form:
+# my-ald-server.example.com
+TICKET_MAX_LIFE=7d
+TICKET_MAX_RENEWABLE_LIFE=14d
+
+SERVER_ID=1
+# Server identifier
+# You need to make sure that the SERVER_ID of each ALD server in domain
+# is different
+
+
+DESCRIPTION=
+# Host description
+
+
+DEFAULT_LOGIN_SHELL=/bin/bash
+# Default login shell
+
+
+DEFAULT_LOCAL_GROUPS=users,audio,video,scanner
+# Default local groups for new domain users
+
+
+ALLOWED_LOCAL_GROUPS=users,audio,video,scanner,cdrom,floppy,fuse
+# Local groups are allowed on this machine for domain users
+
+
+NETWORK_FS_TYPE=cifs
+# May be one of: none, nfs, cifs.
+# Determines network filesystem type to store/mount home directories.
+# If 'none' is set - no global filesystem is used and the following filesystem
+# options are ignored.
+
+
+CACHE_REFRESH_PERIOD=600
+# This parameter applied only to ALD Cache Daemon. Specifies
+# the cache refresh period.
+
+
+SERVER_ON=0
+# Status of the server. May be 1 or 0.
+# (If 0, the client side on server machine is also switched off, 
+#  i.e. CLIENT_ON = 0).
+# When 0:
+#  - Home directories are unexported.
+#  - LDAP mechanism is excluded from nsswitch.
+#  - All Kerberos principals are disabled (allow_tickets=0).
+#  - LDAP, NFS4/Samba, Kerberos, nss-ldapd services are stopped. 
+#  - nscd service is restarted.
+
+
+CLIENT_ON=0
+# Status of the client. May be 1 or 0.
+# Applies only to ald-client.
+# When 0:
+#  - Home directories are unmounted.
+#  - LDAP mechanism is excluded from nsswitch.
+#  - nscd service is restarted.

@@ -1,0 +1,10 @@
+---
+# tasks file for ntp
+- name: Install ntp server
+  apt: name=ntp state=latest    
+
+- name: copy ntp.conf
+  template:
+    src: ntp.conf.j2
+    dest: /etc/ntp.conf
+  notify: Restart ntp

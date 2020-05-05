@@ -1,0 +1,60 @@
+---
+# tasks file for bind
+- name: Create directory
+  file:
+    path: '/etc/bind/zones/{{ item }}'
+    state: directory
+    owner: 'bind'
+    group: 'bind'
+    mode: '0755'
+  loop:
+    - primary
+    - reverse  
+- name: copy files
+  copy: 
+    src: '{{ item }}'
+    dest: '{{ path_to_bind }}'
+    owner: bind
+    group: bind
+    mode: 0755
+  loop:
+    - named.conf
+    - named.conf.options
+- name: generate file zones
+  template: 
+    src:  named.conf.zones.j2
+    dest: '{{ path_to_bind }}/named.conf.zone'
+    owner: bind
+    group: bind
+    mode: 0755
+- name: generate db root
+  template:
+    src: db.root.j2
+    dest: '{{ path_to_bind }}/db.root'
+    owner: bind
+    group: bind
+    mode: 0755 
+- name: generate primary zone
+  template:
+    src: db.primary.j2
+    dest: '{{ path_to_bind }}/zones/primary/db.{{ ansible_hostname }}'
+    owner: bind
+    group: bind
+    mode: 0755
+  notify: Restart bind9
+- name: generate reverse zone
+  template: 
+    src: db.reverse.j2
+    dest: '{{ path_to_bind }}/zones/reverse/db.{{ ansible_hostname }}.reverse'
+    owner: bind
+    group: bind
+    mode: 0755 
+  notify: Restart bind9
+- name: Start and enable bind9
+  service: name=bind9 state=started enabled=yes
+- name: create resolv conf
+  copy:
+    content: |
+              nameserver {{ ansible_host }}
+              search {{ ansible_domain }}
+    dest: /etc/resolv.conf 

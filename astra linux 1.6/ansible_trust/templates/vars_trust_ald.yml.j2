@@ -1,0 +1,4 @@
+trust: 
+{% for host in groups['all'] %}
+  - { fqdn: "{{ hostvars[host]['ansible_fqdn'] }}", domain: "{{ hostvars[host]['ansible_domain'] }}" } 
+{% endfor %}

@@ -1,0 +1,4 @@
+cod ansible_host=192.168.10.100
+ovu1 ansible_host=192.168.10.101
+ovu2 ansible_host=192.168.10.102
+ovu3 ansible_host=192.168.10.103

@@ -1,0 +1,27 @@
+<VirtualHost *:80>
+	ServerAdmin webmaster@localhost
+
+	DocumentRoot /var/www/html
+	<Directory />
+		Options FollowSymLinks
+		AllowOverride None
+	</Directory>
+	<Directory /var/www/html>
+		Options Indexes FollowSymLinks MultiViews
+		AllowOverride All
+		Order allow,deny
+		allow from all
+		AuthType Kerberos
+		KrbAuthRealms {{ ansible_fqdn }}
+		KrbServiceName HTTP/{{ ansible_fqdn }}
+		Krb5Keytab /etc/apache2/keytab
+		KrbSaveCredentials on
+		KrbMethodNegotiate on
+		KrbMethodK5Passwd off
+		Require valid-user
+	</Directory>
+ErrorLog /var/log/apache2/error.log
+	LogLevel warn
+
+	CustomLog /var/log/apache2/access.log combined
+</VirtualHost>

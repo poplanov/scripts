@@ -1,0 +1,90 @@
+---
+- name: Deploy ald domains
+  hosts: all
+  become: yes
+
+  vars:
+    kerb_password  : K/M:12345678
+    ald_password   : admin/admin:12345678
+    def_user       : default/user:12345678
+    ald_user       : spoadmin
+    ald_user_pass  : 12345678
+    trust_pass     : 12345678  # пароль для доверительных отношений
+    apache_keytab  : /etc/apache2/keytab
+
+  tasks:
+    # Generate varfile for create trust realationship
+    - name: Generate var files
+      template:
+        src: templates/vars_trust_ald.yml.j2
+        dest: files/vars_trust_ald.yml
+        owner: admuser
+        mode: 0777
+      delegate_to: 127.0.0.1
+
+    - name: Generate hosts file
+      template:
+        src: templates/hosts.j2
+        dest: /etc/hosts
+
+    - include_vars: files/vars_trust_ald.yml
+    
+    - name: Generate ald conf
+      template:
+        src: templates/ald.conf.j2
+        dest: /etc/ald/ald.conf
+    - name: Create passfile
+      copy:
+        content: |
+                  {{ kerb_password }}
+                  {{ ald_password }}
+                  {{ ald_user }}:{{ ald_user_pass }}
+        dest: /tmp/passfile
+        mode: 0400
+    - name: Init ald dc
+      shell: "ald-init init -f --pass-file /tmp/passfile" 
+    - name: Change default policy
+      shell: "ald-admin policy-mod default --min-classes=1 -f --pass-file /tmp/passfile"
+    - name: Create user
+      shell: 'ald-admin user-add {{ ald_user }} --home-type=cifs --group="Domain Users" -f --pass-file /tmp/passfile'
+    - name: Change MAC user
+      shell: 'ald-admin user-mac {{ ald_user }} --min-lev-int 0 --max-lev-int 3 -f --pass-file /tmp/passfile'
+    - name: Add hosts to user {{ ald_user }}
+      shell: 'ald-admin user-ald-cap {{ ald_user }} --add-host --host-group=Domain\ Controllers --host-group="Domain Computers" -f --pass-file /tmp/passfile'
+    - name: Install apache2
+      apt: 
+        name: '{{ item }}'
+        state: latest
+      with_items:
+        - apache2
+        - libapache2-mod-auth-kerb
+        - curl    
+    - name: Create virtual hosts
+      template:
+        src: templates/000-default.conf.j2
+        dest: /etc/apache2/sites-available/000-default.conf
+      notify: Restart apache2
+    - name: Create principal for web service
+      shell: "ald-admin service-add HTTP/{{ ansible_fqdn }} -f --pass-file /tmp/passfile"
+    - name: Move principal to mac group
+      shell: "ald-admin sgroup-svc-add HTTP/{{ ansible_fqdn }}  --sgroup=mac -f --pass-file /tmp/passfile"
+    - name: Create keytab
+      shell: "ald-client update-svc-keytab HTTP/{{ ansible_fqdn }}  --ktfile={{ apache_keytab }} -f --pass-file /tmp/passfile && chown www-data {{ apache_keytab }} && chmod 644 {{ apache_keytab }}"
+    - name: Create trust realationship
+      shell: "echo .{{ item.domain }}:{{ trust_pass }} >> /tmp/passfile && ald-admin trusted-add .{{ item.domain }} --kdc={{ item.fqdn }} --direction=two-way --desc={{ item.fqdn }} -f --pass-file /tmp/passfile"
+      with_items:
+        - '{{ trust }}'
+      when: item.fqdn != ansible_fqdn 
+      notify: Restart ald
+
+  handlers:
+    - name: Restart apache2
+      service: name=apache2 state=restarted
+    - name: Restart ald
+      shell: "ald-client restart -f"
+
+
+
+
+
+
