@@ -1,6 +1,0 @@
-[dc]
-alddc ansible_host=192.168.10.100
-[clients]
-node1 ansible_host=192.168.10.101
-node2 ansible_host=192.168.10.102
-node3 ansible_host=192.168.10.103

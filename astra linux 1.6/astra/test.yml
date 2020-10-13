@@ -1,8 +1,0 @@
----
-- name: test role bind9
-  hosts: dc
-  become: yes
-  roles:
-          - bind9
-          - ntp
-          - ald-dc

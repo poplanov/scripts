@@ -1,9 +1,0 @@
-zone "{{ ansible_domain }}" {
-type master;
-file "/etc/bind/zones/primary/db.{{ ansible_hostname }}";
-};
-
-zone "{{ ansible_host | ipaddr('revdns') | regex_replace('^[0-9]+\\.', '') }}" {
-type master;
-file "/etc/bind/zones/reverse/db.{{ ansible_hostname }}.reverse";
-};

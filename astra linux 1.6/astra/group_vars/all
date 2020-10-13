@@ -1,3 +1,0 @@
----
-ansible_user         : admuser 
-ansible_ssh_password : 12345678

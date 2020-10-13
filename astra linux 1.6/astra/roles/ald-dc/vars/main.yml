@@ -1,5 +1,0 @@
----
-# vars file for ald-dc
-kerb_admin_pass : 12345678
-ald_admin_pass  : 12345678
-user_pass       : 12345678
